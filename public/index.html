@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNDPT - Gestion des Congés</title>
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+</head>
+<body class="login-page">
+    <div class="login-wrapper">
+        <div class="login-left">
+            <div class="login-left-content">
+                <div class="login-brand-logo">
+                    <img src="logo/poste.jfif" alt="MNDPT" class="login-brand-img">
+                </div>
+                <h2>MNDPT</h2>
+                <p class="login-tagline">Système de Gestion des Congés</p>
+
+                <div class="login-features">
+                    <div class="login-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <div>
+                            <h5>Gestion des employés</h5>
+                            <p>Créez et gérez les comptes de vos employés</p>
+                        </div>
+                    </div>
+                    <div class="login-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-calendar-check"></i>
+                        </div>
+                        <div>
+                            <h5>Gestion des congés</h5>
+                            <p>Enregistrez et suivez les congés de vos équipes</p>
+                        </div>
+                    </div>
+                    <div class="login-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <div>
+                            <h5>Accès sécurisé</h5>
+                            <p>Espace réservé à la direction</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="login-left-footer">
+                <small>&copy; DIR MNDPT Fianarantsoa. Tous droits réservés.</small>
+            </div>
+        </div>
+
+        <div class="login-right">
+            <div class="login-form-container">
+                <div class="login-form-header">
+                    <div class="login-mobile-logo">
+                        <img src="logo/poste.jfif" alt="MNDPT">
+                    </div>
+                    <h1>Espace de gestion</h1>
+                    <p>Connectez-vous pour gérer l'application</p>
+                </div>
+
+                <form id="loginForm" class="login-form" novalidate>
+                    <div class="form-floating mb-3">
+                        <input type="email" class="form-control" id="email" placeholder="Email" required>
+                        <label for="email"><i class="bi bi-envelope me-2"></i>Adresse email</label>
+                        <div class="invalid-feedback" id="emailError"></div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input type="password" class="form-control" id="password" placeholder="Mot de passe" required>
+                        <label for="password"><i class="bi bi-lock me-2"></i>Mot de passe</label>
+                        <button class="toggle-password" type="button" id="togglePassword">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <div class="invalid-feedback" id="passwordError"></div>
+                    </div>
+
+                    <div id="loginAlert" class="alert d-none" role="alert"></div>
+
+                    <button type="submit" class="btn btn-login" id="loginBtn">
+                        <span class="btn-text">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Se connecter
+                        </span>
+                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

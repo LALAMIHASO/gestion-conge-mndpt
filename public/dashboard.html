@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNDPT - Gestion des Congés</title>
+    <link href="vendor/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+    <link href="css/styles.css?v=4" rel="stylesheet">
+</head>
+<body>
+    <div class="app-body">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <img src="logo/poste.jfif" alt="MNDPT" class="sidebar-logo-img">
+                </div>
+                <div class="sidebar-brand">
+                    <h4>MNDPT</h4>
+                    <small>Gestion des Congés</small>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link active" data-view="overview">
+                    <i class="bi bi-speedometer2"></i> Tableau de bord
+                </a>
+                <a href="#" class="sidebar-link" data-view="employees">
+                    <i class="bi bi-people"></i> Employés
+                </a>
+                <a href="#" class="sidebar-link" data-view="leaves">
+                    <i class="bi bi-calendar-check"></i> Congés
+                </a>
+                <a href="#" class="sidebar-link" data-view="authorisations">
+                    <i class="bi bi-person-check"></i> Autorisation d'absence
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <i class="bi bi-person-circle user-avatar"></i>
+                    <div class="user-info">
+                        <span class="user-name" id="sidebarUserName">...</span>
+                        <span class="user-role" id="sidebarUserRole">Directeur</span>
+                    </div>
+                </div>
+                <button class="sidebar-logout" id="logoutBtn">
+                    <i class="bi bi-box-arrow-right"></i> Se déconnecter
+                </button>
+            </div>
+        </aside>
+
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="top-bar">
+                <button class="btn-toggle-sidebar" id="toggleSidebar">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="top-bar-right">
+                    <span class="top-bar-date" id="currentDate"></span>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm" id="btnSettings" title="Paramètres du compte">
+                            <i class="bi bi-gear"></i>
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="btnAddEmployee">
+                            <i class="bi bi-person-plus me-1"></i> Employé
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="btnAddLeave">
+                            <i class="bi bi-calendar-plus me-1"></i> Congé
+                        </button>
+                        <button class="btn btn-primary btn-sm" id="btnAddAuthorization">
+                            <i class="bi bi-person-check me-1"></i> Autorisation
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <!-- VIEW: OVERVIEW -->
+                <div id="view-overview" class="view-section">
+                    <div class="dashboard-header">
+                        <div>
+                            <h2>Tableau de bord</h2>
+                            <p class="text-muted mb-0">Vue d'ensemble de l'activité des congés</p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="card stat-card stat-total">
+                                <div class="card-body">
+                                    <div class="stat-content">
+                                        <div>
+                                            <h3 id="statEmployes">0</h3>
+                                            <p>Employés</p>
+                                        </div>
+                                        <div class="stat-icon-wrap">
+                                            <i class="bi bi-people"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card stat-card stat-total">
+                                <div class="card-body">
+                                    <div class="stat-content">
+                                        <div>
+                                            <h3 id="statTotal">0</h3>
+                                            <p>Congés total</p>
+                                        </div>
+                                        <div class="stat-icon-wrap">
+                                            <i class="bi bi-calendar-check"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card stat-card stat-approved">
+                                <div class="card-body">
+                                    <div class="stat-content">
+                                        <div>
+                                            <h3 id="statApproved">0</h3>
+                                            <p>Approuvés</p>
+                                        </div>
+                                        <div class="stat-icon-wrap">
+                                            <i class="bi bi-check-circle"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card stat-card stat-rejected">
+                                <div class="card-body">
+                                    <div class="stat-content">
+                                        <div>
+                                            <h3 id="statRejected">0</h3>
+                                            <p>Non approuvés</p>
+                                        </div>
+                                        <div class="stat-icon-wrap">
+                                            <i class="bi bi-x-circle"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card table-card">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-calendar-range me-2"></i>Derniers congés
+                            </h5>
+                            <small class="text-muted">Clic sur "Congés" pour tout voir</small>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Employé</th>
+                                        <th>Type</th>
+                                        <th>Période</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="overviewLeavesBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card table-card">
+                        <div class="card-header">
+                            <div class="row align-items-center g-2">
+                                <div class="col-md-6">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-clock-history me-2"></i>Historique par employé
+                                    </h5>
+                                </div>
+                                <div class="col-md-6 text-md-end d-flex justify-content-md-end align-items-center gap-2">
+                                    <label class="form-label mb-0 small">Année :</label>
+                                    <select class="form-select form-select-sm" id="historiqueYear" style="width:auto"></select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-header border-top-0">
+                            <div class="row align-items-center g-2">
+                                <div class="col-md-6">
+                                    <input type="search" class="form-control" id="searchHistorique"
+                                        placeholder="Rechercher un employé...">
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <span class="text-muted small"><span id="historiqueCount">0</span> employé(s)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>N°</th>
+                                        <th>Employé</th>
+                                        <th>Département</th>
+                                        <th>Fonction</th>
+                                        <th>Solde congé</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="historiqueTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Registre detail under the table -->
+                    <div id="historiqueDetail" class="mt-3 d-none">
+                        <div class="card table-card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0" id="historiqueDetailTitle">
+                                    <i class="bi bi-journal-text me-2"></i>Registre de congés
+                                </h5>
+                                <button class="btn btn-sm btn-outline-secondary" id="btnCloseHistoriqueDetail">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Type</th>
+                                            <th>Période</th>
+                                            <th>Jours</th>
+                                            <th>Lieu</th>
+                                            <th>Motif</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historiqueDetailBody"></tbody>
+                                    <tfoot id="historiqueDetailFoot"></tfoot>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="card table-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0" id="historiqueAuthTitle">
+                                    <i class="bi bi-person-check me-2"></i>Registre des autorisations d'absence
+                                </h5>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Période</th>
+                                            <th>Jours</th>
+                                            <th>Motif</th>
+                                            <th>Lieu</th>
+                                            <th>Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historiqueAuthBody"></tbody>
+                                    <tfoot id="historiqueAuthFoot"></tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: EMPLOYEES -->
+                <div id="view-employees" class="view-section d-none">
+                    <div class="dashboard-header">
+                        <div>
+                            <h2>Gestion des employés</h2>
+                            <p class="text-muted mb-0">Créez et gérez les comptes des employés</p>
+                        </div>
+                        <button class="btn btn-primary" id="btnAddEmployee2">
+                            <i class="bi bi-person-plus me-2"></i>Nouvel employé
+                        </button>
+                    </div>
+
+                    <div class="card table-card">
+                        <div class="card-header">
+                            <div class="row align-items-center g-2">
+                                <div class="col-md-6">
+                                    <input type="search" class="form-control" id="searchEmployee"
+                                        placeholder="Rechercher un employé...">
+                                </div>
+                                <div class="col-md-6 text-md-end">
+                                    <span class="text-muted small"><span id="employeeCount">0</span> employé(s)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>IM (Matricule)</th>
+                                        <th>Nom complet</th>
+                                        <th>Email</th>
+                                        <th>Département</th>
+                                        <th>Fonction</th>
+                                        <th>Date embauche</th>
+                                        <th>Solde congé</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="employeesTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: LEAVES -->
+                <div id="view-leaves" class="view-section d-none">
+                    <div class="dashboard-header">
+                        <div>
+                            <h2>Gestion des congés</h2>
+                            <p class="text-muted mb-0">Enregistrez et suivez les congés des employés</p>
+                        </div>
+                        <button class="btn btn-primary" id="btnAddLeave2">
+                            <i class="bi bi-calendar-plus me-2"></i>Nouveau congé
+                        </button>
+                    </div>
+
+                    <div class="card table-card">
+                        <div class="card-header">
+                            <div class="row align-items-center g-2">
+                                <div class="col-md-8">
+                                    <div class="btn-group" id="filterButtons" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm active" data-filter="all">Tous</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-filter="En attente">En attente</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-filter="Approuvé">Approuvés</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-filter="Non approuvé">Non approuvés</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="search" class="form-control" id="searchLeave"
+                                        placeholder="Rechercher un congé...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Employé</th>
+                                        <th>Type</th>
+                                        <th>Période</th>
+                                        <th>Motif</th>
+                                        <th>Lieu</th>
+                                        <th>Statut</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leavesTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW: AUTHORISATIONS -->
+                <div id="view-authorisations" class="view-section d-none">
+                    <div class="dashboard-header">
+                        <div>
+                            <h2>Autorisations d'absence</h2>
+                            <p class="text-muted mb-0">Maximum 2 jours par mois pour chaque employé</p>
+                        </div>
+                        <button class="btn btn-primary" id="btnAddAuthorization2">
+                            <i class="bi bi-person-plus me-2"></i>Nouvelle autorisation
+                        </button>
+                    </div>
+
+                    <div class="card table-card">
+                        <div class="card-header">
+                            <div class="row align-items-center g-2">
+                                <div class="col-md-8">
+                                    <div class="btn-group" id="authFilterButtons" role="group">
+                                        <button type="button" class="btn btn-outline-primary btn-sm active" data-filter="all">Tous</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-filter="En attente">En attente</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-filter="Approuvé">Approuvés</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-filter="Non approuvé">Non approuvés</button>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="search" class="form-control" id="searchAuthorization"
+                                        placeholder="Rechercher une autorisation...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Employé</th>
+                                        <th>Période</th>
+                                        <th>Jours</th>
+                                        <th>Motif</th>
+                                        <th>Lieu</th>
+                                        <th>Statut</th>
+                                        <th class="text-end">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="authorizationsTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EMPLOYEE -->
+    <div class="modal fade" id="employeeModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="employeeModalTitle">
+                        <i class="bi bi-person-plus me-2"></i>Nouvel employé
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="employeeForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Prénom *</label>
+                                <input type="text" class="form-control" id="empPrenom" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Nom *</label>
+                                <input type="text" class="form-control" id="empNom" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">IM (Matricule) *</label>
+                                <input type="text" class="form-control" id="empIm" maxlength="6" inputmode="numeric" pattern="\d{6}" placeholder="6 chiffres, ex: 123456" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email *</label>
+                                <input type="email" class="form-control" id="empEmail" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Département *</label>
+                                <select class="form-select" id="empDepartement" required>
+                                    <option value="">-- Choisir --</option>
+                                    <option>Direction</option>
+                                    <option>Service Technique</option>
+                                    <option>SRDC</option>
+                                    <option>Service Bureau Regional</option>
+                                    <option>Technicien de Surface</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Fonction *</label>
+                                <select class="form-select" id="empFonction" required>
+                                    <option value="">-- Choisir un département d'abord --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date d'embauche *</label>
+                                <input type="date" class="form-control" id="empDateEmbauche" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveEmployee">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: LEAVE -->
+    <div class="modal fade" id="leaveModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="leaveModalTitle">
+                        <i class="bi bi-calendar-plus me-2"></i>Nouveau congé
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="leaveForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Employé *</label>
+                                <select class="form-select" id="leaveUserId" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Type de congé *</label>
+                                <select class="form-select" id="leaveType" required>
+                                    <option value="annuel">Congé annuel</option>
+                                    <option value="maladie">Congé maladie</option>
+                                    <option value="maternite">Congé maternité</option>
+                                    <option value="paternite">Congé paternité</option>
+                                    <option value="personnel">Congé personnel</option>
+                                    <option value="exceptionnel">Congé exceptionnel</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date de début *</label>
+                                <input type="date" class="form-control" id="leaveDateDebut" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date de fin *</label>
+                                <input type="date" class="form-control" id="leaveDateFin" required>
+                            </div>
+                            <div class="col-md-12 leave-duration-info">
+                                <span id="leaveDuration" class="badge bg-primary"></span>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Motif</label>
+                                <textarea class="form-control" id="leaveMotif" rows="2"></textarea>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Lieu de destination *</label>
+                                <input type="text" class="form-control" id="leaveLieu" placeholder="Ex: Antananarivo, Fianarantsoa..." required>
+                            </div>
+                            <div class="col-md-12" id="leaveStatutField">
+                                <label class="form-label">Statut</label>
+                                <select class="form-select" id="leaveStatut">
+                                    <option value="En attente">En attente</option>
+                                    <option value="Approuvé">Approuvé</option>
+                                    <option value="Non approuvé">Non approuvé</option>
+                                </select>
+                            </div>
+                            <div class="col-md-12 d-none" id="leaveStatutInfo">
+                                <div class="alert alert-warning mb-0 py-2 small">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Cette demande sera enregistrée avec le statut <strong>En attente</strong> puis examinée par le directeur.
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveLeave">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: AUTHORIZATION -->
+    <div class="modal fade" id="authorizationModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="authorizationModalTitle">
+                        <i class="bi bi-person-check me-2"></i>Nouvelle autorisation d'absence
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="authorizationForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Employé *</label>
+                                <select class="form-select" id="authUserId" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date de début *</label>
+                                <input type="date" class="form-control" id="authDateDebut" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Date de fin *</label>
+                                <input type="date" class="form-control" id="authDateFin" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Lieu de destination *</label>
+                                <input type="text" class="form-control" id="authLieu" placeholder="Ex: Antananarivo, Fianarantsoa..." required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Motif *</label>
+                                <textarea class="form-control" id="authMotif" rows="2" required></textarea>
+                            </div>
+                            <div class="col-md-6 auth-duration-info">
+                                <span id="authDuration" class="badge bg-primary"></span>
+                            </div>
+                            <div class="col-12" id="authLimitInfo">
+                                <div class="alert alert-info mb-0 py-2 small">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Chaque employé a droit à <strong>2 jours d'autorisation d'absence par mois</strong>.
+                                </div>
+                            </div>
+                            <div class="col-md-12 d-none" id="authStatutField">
+                                <label class="form-label">Statut</label>
+                                <select class="form-select" id="authStatut">
+                                    <option value="En attente">En attente</option>
+                                    <option value="Approuvé">Approuvé</option>
+                                    <option value="Non approuvé">Non approuvé</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveAuthorization">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: AUTHORIZATION DECISION -->
+    <div class="modal fade" id="authorizationDecisionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard-check me-2"></i>Examen de l'autorisation d'absence
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="decision-card">
+                                <div class="decision-card-title"><i class="bi bi-person me-1"></i>Employé</div>
+                                <div id="authDecisionEmployeeInfo"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="decision-card">
+                                <div class="decision-card-title"><i class="bi bi-person-check me-1"></i>Autorisation #<span id="authDecisionId">-</span></div>
+                                <div id="authDecisionInfo"></div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Commentaire du directeur *</label>
+                            <textarea class="form-control" id="authDecisionComment" rows="2" placeholder="Motif de la décision (obligatoire)"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-danger" id="btnRefuseAuthorization">
+                        <i class="bi bi-x-circle me-2"></i>Refuser
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnApproveAuthorization">
+                        <i class="bi bi-check-circle me-2"></i>Valider
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DECISION -->
+    <div class="modal fade" id="decisionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clipboard-check me-2"></i>Examen de la demande de congé
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="decision-card">
+                                <div class="decision-card-title"><i class="bi bi-person me-1"></i>Employé</div>
+                                <div id="decisionEmployeeInfo"></div>
+                                <div class="mt-2" id="decisionSolde"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="decision-card">
+                                <div class="decision-card-title"><i class="bi bi-calendar-check me-1"></i>Demande #<span id="decisionLeaveId">-</span></div>
+                                <div id="decisionLeaveInfo"></div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Commentaire du directeur *</label>
+                            <textarea class="form-control" id="decisionComment" rows="2" placeholder="Motif de la décision (obligatoire)"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <div class="decision-card">
+                                <div class="decision-card-title"><i class="bi bi-clock-history me-1"></i>Historique des congés de <span id="decisionHistoryName"></span></div>
+                                <div id="decisionHistory" class="decision-history"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-danger" id="btnRefuseLeave">
+                        <i class="bi bi-x-circle me-2"></i>Refuser
+                    </button>
+                    <button type="button" class="btn btn-success" id="btnApproveLeave">
+                        <i class="bi bi-check-circle me-2"></i>Valider
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: PARAMÈTRES -->
+    <div class="modal fade" id="settingsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-gear me-2"></i>Paramètres du compte
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="settingsForm">
+                        <div class="mb-3">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="settingsEmail" required>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe actuel *</label>
+                            <input type="password" class="form-control" id="settingsCurrentPassword" required autocomplete="current-password">
+                            <div class="form-text">Requis pour confirmer les modifications.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Nouveau mot de passe</label>
+                            <input type="password" class="form-control" id="settingsNewPassword" placeholder="Laisser vide pour ne pas changer">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Confirmer le nouveau mot de passe</label>
+                            <input type="password" class="form-control" id="settingsConfirmPassword">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveSettings" form="settingsForm">
+                        <i class="bi bi-check-lg me-2"></i>Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: CONFIRM DELETE -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-danger">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Confirmer la suppression
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteModalMessage">Êtes-vous sûr de vouloir supprimer cet élément ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmDelete">
+                        <i class="bi bi-trash me-2"></i>Supprimer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container position-fixed top-0 end-0 p-3"></div>
+
+    <script src="vendor/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="js/utils.js?v=4"></script>
+    <script src="js/dashboard.js?v=8"></script>
+</body>
+</html>

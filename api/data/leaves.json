@@ -1,0 +1,14 @@
+[
+    {
+        "user_id": 9,
+        "type_conge": "annuel",
+        "date_debut": "2026-09-21",
+        "date_fin": "2026-09-25",
+        "lieu": "ANTANARIVO",
+        "motif": "marary",
+        "id": 1,
+        "date_soumission": "2026-09-16",
+        "statut": "Approuvé",
+        "commentaire_manager": ""
+    }
+]

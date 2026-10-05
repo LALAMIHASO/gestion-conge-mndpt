@@ -1,0 +1,51 @@
+[
+    {
+        "id": 2,
+        "nom": "Rajoelina",
+        "prenom": "Nomena",
+        "email": "nomena.rajoelina@poste.mg",
+        "password": "directeur2026",
+        "role": "directeur",
+        "departement": "Direction",
+        "fonction": "PRMP",
+        "date_embauche": "2015-02-01",
+        "solde_conge": 30
+    },
+    {
+        "id": 3,
+        "nom": "Andrianaivolovatiana",
+        "prenom": "Directeur",
+        "email": "andrianaivolovatiana@gmail.com",
+        "password": "korotika",
+        "role": "directeur",
+        "departement": "Direction",
+        "fonction": "Assistant PRMP",
+        "date_embauche": "2015-02-01",
+        "solde_conge": 30
+    },
+    {
+        "id": 4,
+        "nom": "Rakoto",
+        "prenom": "Marie",
+        "email": "marie.rakoto@poste.mg",
+        "password": "password123",
+        "role": "chef_technique",
+        "departement": "Service Technique",
+        "fonction": "Chef de service technique",
+        "date_embauche": "2018-06-01",
+        "solde_conge": 20
+    },
+    {
+        "id": 5,
+        "nom": "RAKOTOMANGA",
+        "prenom": "Lanto",
+        "im": "223332",
+        "email": "lanto@gmail.com",
+        "password": "lanto2026",
+        "role": "chef_srdc",
+        "departement": "SRDC",
+        "fonction": "Chef de service SRDC - Comptable - Ordonateur suppléant",
+        "date_embauche": "2026-09-03",
+        "solde_conge": 25
+    }
+]
