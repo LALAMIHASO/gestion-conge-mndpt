@@ -99,9 +99,9 @@ class AuthorizationController {
             return;
         }
 
-        if (isset($input['statut']) && in_array($input['statut'], ['Approuvé', 'Non approuvé'], true) && trim($input['commentaire_manager'] ?? '') === '') {
+        if (isset($input['statut']) && !in_array($input['statut'], ['En attente', 'Approuvé', 'Non approuvé'], true)) {
             http_response_code(400);
-            echo json_encode(['error' => 'Le commentaire est obligatoire pour valider ou refuser l\'autorisation d\'absence.']);
+            echo json_encode(['error' => 'Statut invalide.']);
             return;
         }
 
@@ -111,6 +111,10 @@ class AuthorizationController {
             if (isset($input[$field]) && $input[$field] !== '') {
                 $update[$field] = ($field === 'user_id') ? (int)$input[$field] : $input[$field];
             }
+        }
+
+        if (isset($input['commentaire_manager'])) {
+            $update['commentaire_manager'] = trim($input['commentaire_manager']);
         }
 
         if (isset($update['date_debut'], $update['date_fin']) && $update['date_debut'] > $update['date_fin']) {

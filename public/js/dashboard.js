@@ -35,6 +35,7 @@ class Dashboard {
         this.authFilter = 'all';
         this.currentFilter = 'all';
         this.deleteConfirmCallback = null;
+        this.employeeDetailId = null;
     }
 
     get isDir() { return this.currentUser && this.currentUser.role === 'directeur'; }
@@ -198,6 +199,10 @@ class Dashboard {
         document.getElementById('btnCloseHistoriqueDetail')?.addEventListener('click', () => {
             document.getElementById('historiqueDetail').classList.add('d-none');
         });
+        document.getElementById('btnCloseEmployeeDetail')?.addEventListener('click', () => {
+            document.getElementById('employeeDetail').classList.add('d-none');
+            this.employeeDetailId = null;
+        });
 
         // Search
         document.getElementById('searchEmployee')?.addEventListener('input', () => this.renderEmployees());
@@ -264,7 +269,7 @@ class Dashboard {
             }
 
             return `
-                <tr>
+                <tr class="employee-row" data-id="${e.id}" style="cursor:pointer" title="Voir les congés et autorisations">
                     <td><strong>${e.im || '-'}</strong></td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
@@ -289,10 +294,130 @@ class Dashboard {
         tbody.querySelectorAll('.btn-delete-employee').forEach(btn => {
             btn.addEventListener('click', () => this.confirmDeleteEmployee(btn.dataset.id));
         });
+        tbody.querySelectorAll('.employee-row').forEach(row => {
+            row.addEventListener('click', (e) => {
+                if (e.target.closest('button')) return;
+                this.showEmployeeDetail(row.dataset.id);
+            });
+        });
     }
 
     getInitials(prenom, nom) {
         return (prenom?.[0] || '') + (nom?.[0] || '');
+    }
+
+    showEmployeeDetail(employeeId) {
+        const employee = this.employees.find(e => e.id == employeeId);
+        if (!employee) return;
+
+        this.employeeDetailId = employeeId;
+        const fullName = `${employee.prenom} ${employee.nom}`;
+
+        const employeeLeaves = this.leaves
+            .filter(l => l.user_id == employeeId)
+            .sort((a, b) => b.date_debut.localeCompare(a.date_debut));
+
+        document.getElementById('employeeDetailTitle').innerHTML = `
+            <i class="bi bi-journal-text me-2"></i>Congés de ${fullName} — ${employeeLeaves.length} enregistrement(s)
+        `;
+
+        const tbody = document.getElementById('employeeDetailBody');
+        const tfoot = document.getElementById('employeeDetailFoot');
+
+        if (employeeLeaves.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center py-3 text-muted">
+                        Aucun congé enregistré pour cet employé.
+                    </td>
+                </tr>`;
+            tfoot.innerHTML = '';
+        } else {
+            let totalDays = 0;
+            tbody.innerHTML = employeeLeaves.map((l, i) => {
+                const days = this.getLeaveDuration(l.date_debut, l.date_fin);
+                if (l.statut === 'Approuvé') totalDays += days;
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td><span class="badge type-badge">${getLeaveTypeLabel(l.type_conge)}</span></td>
+                        <td>
+                            <small>
+                                <i class="bi bi-calendar3 me-1"></i>${formatDate(l.date_debut)}<br>
+                                <i class="bi bi-calendar-check me-1"></i>${formatDate(l.date_fin)}
+                            </small>
+                        </td>
+                        <td><span class="badge bg-secondary">${days} jrs</span></td>
+                        <td><small>${l.lieu || '-'}</small></td>
+                        <td><small>${l.motif || '-'}</small></td>
+                        <td>${getStatusBadge(l.statut)}</td>
+                    </tr>`;
+            }).join('');
+            tfoot.innerHTML = `
+                <tr class="table-active">
+                    <td colspan="3" class="text-end fw-bold">Total jours approuvés :</td>
+                    <td><span class="badge bg-primary">${totalDays} jrs</span></td>
+                    <td colspan="3"></td>
+                </tr>`;
+        }
+
+        const employeeAuths = this.authorizations
+            .filter(a => a.user_id == employeeId)
+            .sort((a, b) => b.date_debut.localeCompare(a.date_debut));
+
+        document.getElementById('employeeAuthTitle').innerHTML = `
+            <i class="bi bi-person-check me-2"></i>Autorisations d'absence de ${fullName} — ${employeeAuths.length} enregistrement(s)
+        `;
+
+        const authBody = document.getElementById('employeeAuthBody');
+        const authFoot = document.getElementById('employeeAuthFoot');
+
+        if (employeeAuths.length === 0) {
+            authBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-3 text-muted">
+                        Aucune autorisation d'absence enregistrée pour cet employé.
+                    </td>
+                </tr>`;
+            authFoot.innerHTML = '';
+        } else {
+            let totalAuthDays = 0;
+            authBody.innerHTML = employeeAuths.map((a, i) => {
+                const days = this.getAuthorizationDuration(a.date_debut, a.date_fin);
+                if (a.statut === 'Approuvé') totalAuthDays += days;
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>
+                            <small>
+                                <i class="bi bi-calendar3 me-1"></i>${formatDate(a.date_debut)}<br>
+                                <i class="bi bi-calendar-check me-1"></i>${formatDate(a.date_fin)}
+                            </small>
+                        </td>
+                        <td><span class="badge bg-secondary">${days} jrs</span></td>
+                        <td><small>${a.motif || '-'}</small></td>
+                        <td><small><i class="bi bi-geo-alt me-1"></i>${a.lieu || '-'}</small></td>
+                        <td>${getStatusBadge(a.statut)}</td>
+                    </tr>`;
+            }).join('');
+            authFoot.innerHTML = `
+                <tr class="table-active">
+                    <td colspan="2" class="text-end fw-bold">Total jours approuvés :</td>
+                    <td><span class="badge bg-primary">${totalAuthDays} jrs</span></td>
+                    <td colspan="3"></td>
+                </tr>`;
+        }
+
+        const detail = document.getElementById('employeeDetail');
+        detail.classList.remove('d-none');
+        detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    refreshEmployeeDetail() {
+        const detail = document.getElementById('employeeDetail');
+        if (this.employeeDetailId && detail && !detail.classList.contains('d-none')) {
+            this.showEmployeeDetail(this.employeeDetailId);
+        }
     }
 
     openEmployeeModal(mode = 'create', id = null) {
@@ -432,6 +557,7 @@ class Dashboard {
             this.leaves = await ApiClient.get('leaves');
             this.renderLeaves();
             this.renderOverview();
+            this.refreshEmployeeDetail();
             await this.loadStats();
         } catch (e) {
             Toast.show('Erreur lors du chargement des congés.', 'error');
@@ -514,6 +640,53 @@ class Dashboard {
         return Math.max(0, Math.round((d2 - d1) / 86400000) + 1);
     }
 
+    renderDecisionHistory(userId, empName, exclude, ids) {
+        const nameEl = document.getElementById(ids.name);
+        if (nameEl) nameEl.textContent = empName;
+
+        const leaves = this.leaves
+            .filter(l => l.user_id == userId && !(exclude.type === 'leave' && l.id == exclude.id))
+            .sort((a, b) => (b.date_debut || '').localeCompare(a.date_debut || ''));
+
+        const leavesEl = document.getElementById(ids.leaves);
+        leavesEl.innerHTML = leaves.length === 0 ? `
+            <div class="text-center py-3 text-muted">
+                <i class="bi bi-inbox fs-3 d-block mb-1"></i>Aucun congé enregistré pour cet employé.
+            </div>` : leaves.map(l => `
+            <div class="history-item">
+                <div class="history-item-left">
+                    <span class="badge type-badge">${getLeaveTypeLabel(l.type_conge)}</span>
+                    <small class="text-muted ms-2">
+                        ${formatDate(l.date_debut)} → ${formatDate(l.date_fin)}
+                        <span class="badge bg-secondary ms-1">${this.getLeaveDuration(l.date_debut, l.date_fin)} jrs</span>
+                    </small>
+                    ${l.commentaire_manager ? `<br><small class="text-muted"><i class="bi bi-chat-left-text me-1"></i>${l.commentaire_manager}</small>` : ''}
+                </div>
+                <div>${getStatusBadge(l.statut)}</div>
+            </div>`).join('');
+
+        const auths = this.authorizations
+            .filter(a => a.user_id == userId && !(exclude.type === 'auth' && a.id == exclude.id))
+            .sort((a, b) => (b.date_debut || '').localeCompare(a.date_debut || ''));
+
+        const authsEl = document.getElementById(ids.auths);
+        authsEl.innerHTML = auths.length === 0 ? `
+            <div class="text-center py-3 text-muted">
+                <i class="bi bi-inbox fs-3 d-block mb-1"></i>Aucune autorisation d'absence enregistrée pour cet employé.
+            </div>` : auths.map(a => `
+            <div class="history-item">
+                <div class="history-item-left">
+                    <small class="text-muted">
+                        <i class="bi bi-calendar3 me-1"></i>${formatDate(a.date_debut)} → ${formatDate(a.date_fin)}
+                        <span class="badge bg-secondary ms-1">${this.getAuthorizationDuration(a.date_debut, a.date_fin)} jrs</span>
+                    </small>
+                    ${a.motif ? `<br><small class="text-muted"><i class="bi bi-chat-left-text me-1"></i>${a.motif}</small>` : ''}
+                    ${a.commentaire_manager ? `<br><small class="text-muted"><i class="bi bi-check2-all me-1"></i>${a.commentaire_manager}</small>` : ''}
+                </div>
+                <div>${getStatusBadge(a.statut)}</div>
+            </div>`).join('');
+    }
+
     openDecisionModal(id) {
         const leave = this.leaves.find(l => l.id == id);
         if (!leave) return;
@@ -551,31 +724,11 @@ class Dashboard {
             ${leave.commentaire_manager ? `<small class="text-muted"><strong>Commentaire :</strong> ${leave.commentaire_manager}</small>` : ''}
         `;
 
-        document.getElementById('decisionHistoryName').textContent = empName;
-        const history = this.leaves
-            .filter(l => l.user_id == leave.user_id && l.id != leave.id)
-            .sort((a, b) => (b.date_soumission || '').localeCompare(a.date_soumission || ''));
-
-        const historyEl = document.getElementById('decisionHistory');
-        if (history.length === 0) {
-            historyEl.innerHTML = `
-                <div class="text-center py-3 text-muted">
-                    <i class="bi bi-inbox fs-3 d-block mb-1"></i>
-                    Aucun congé passé pour cet employé.
-                </div>`;
-        } else {
-            historyEl.innerHTML = history.map(h => `
-                <div class="history-item">
-                    <div class="history-item-left">
-                        <span class="badge type-badge">${getLeaveTypeLabel(h.type_conge)}</span>
-                        <small class="text-muted ms-2">
-                            ${formatDate(h.date_debut)} → ${formatDate(h.date_fin)}
-                            <span class="badge bg-secondary ms-1">${this.getLeaveDuration(h.date_debut, h.date_fin)} jrs</span>
-                        </small>
-                    </div>
-                    <div>${getStatusBadge(h.statut)}</div>
-                </div>`).join('');
-        }
+        this.renderDecisionHistory(leave.user_id, empName, { type: 'leave', id: leave.id }, {
+            name: 'decisionHistoryName',
+            leaves: 'decisionHistory',
+            auths: 'decisionAuthHistory'
+        });
 
         const comment = leave.commentaire_manager || '';
         document.getElementById('decisionComment').value = comment;
@@ -591,10 +744,6 @@ class Dashboard {
         const id = this.decidingLeaveId;
         if (!id) return;
         const comment = document.getElementById('decisionComment').value.trim();
-        if (!comment) {
-            Toast.show('Veuillez saisir un commentaire précisant le motif de votre décision.', 'error');
-            return;
-        }
         const body = { statut, commentaire_manager: comment };
         const btn = statut === 'Approuvé' ? document.getElementById('btnApproveLeave') : document.getElementById('btnRefuseLeave');
 
@@ -758,6 +907,7 @@ class Dashboard {
             this.authorizations = await ApiClient.get('authorizations');
             this.renderAuthorizations();
             this.renderOverview();
+            this.refreshEmployeeDetail();
         } catch (e) {
             Toast.show('Erreur lors du chargement des autorisations.', 'error');
         }
@@ -1035,6 +1185,12 @@ class Dashboard {
 
         document.getElementById('authDecisionComment').value = auth.commentaire_manager || '';
 
+        this.renderDecisionHistory(auth.user_id, auth.employee_name, { type: 'auth', id: auth.id }, {
+            name: 'authDecisionHistoryName',
+            leaves: 'authDecisionHistory',
+            auths: 'authDecisionAuthHistory'
+        });
+
         const pending = auth.statut === 'En attente';
         document.getElementById('btnApproveAuthorization').classList.toggle('disabled', !pending);
         document.getElementById('btnRefuseAuthorization').classList.toggle('disabled', !pending);
@@ -1046,10 +1202,6 @@ class Dashboard {
         const id = this.decidingAuthorizationId;
         if (!id) return;
         const comment = document.getElementById('authDecisionComment').value.trim();
-        if (!comment) {
-            Toast.show('Veuillez saisir un commentaire précisant le motif de votre décision.', 'error');
-            return;
-        }
         const body = { statut, commentaire_manager: comment };
         const btn = statut === 'Approuvé' ? document.getElementById('btnApproveAuthorization') : document.getElementById('btnRefuseAuthorization');
 

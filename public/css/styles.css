@@ -775,6 +775,21 @@ body {
     border-bottom: none;
 }
 
+.history-item-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.modal-history {
+    padding: 14px 20px 20px;
+    border-top: 1px solid #eef2f7;
+    background: #f8fafc;
+}
+
+.modal-history .decision-card {
+    background: #ffffff;
+}
+
 /* ===========================
    BUTTON GROUP
    =========================== */
